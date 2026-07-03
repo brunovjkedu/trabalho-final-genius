@@ -1,0 +1,14 @@
+.DS_Store
+work/
+transcript
+*.wlf
+*.vcd
+*.bak
+*.rpt
+*.sof
+*.pof
+db/
+incremental_db/
+output_files/
+simulation/
+work/

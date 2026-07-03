@@ -1,0 +1,14 @@
+src/lfsr_random.v
+src/sequence_memory.v
+src/level_register.v
+src/counter4.v
+src/sequence_compare.v
+src/led_driver.v
+src/seven_segment.v
+src/debouncer.v
+src/button_decoder.v
+src/timer.v
+src/genius_datapath.v
+src/genius_control.v
+src/genius_top.v
+tb/tb_genius_all_cases.v
