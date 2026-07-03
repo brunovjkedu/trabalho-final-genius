@@ -59,6 +59,8 @@ module genius_datapath (
     wire [3:0] display_tens;
     wire [3:0] display_ones;
     wire [3:0] level_digit;
+    wire show_record;
+    wire show_seconds;
     wire [6:0] normal_hex0;
     wire [6:0] normal_hex1;
     wire [6:0] normal_hex2;
@@ -75,9 +77,16 @@ module genius_datapath (
 
     /*
      * Durante a entrada, HEX2/HEX1 mostram o tempo restante.
-     * Fora da entrada, eles mostram o recorde armazenado.
+     * Em IDLE, WIN e LOSE, mostram o recorde armazenado.
+     * Durante exibicao e pausa, ficam apagados para nao confundir o jogador.
      */
-    assign display_number = use_input_address ? seconds_left : record;
+    assign show_seconds = (state_display_value == 4'd2);
+    assign show_record = (state_display_value == 4'd0 ||
+                          state_display_value == 4'd3 ||
+                          state_display_value == 4'd4);
+    assign display_number = show_seconds ? seconds_left :
+                            show_record ? record :
+                            6'd0;
     assign level_digit = (level >= 6'd30) ? (level - 6'd30) :
                          (level >= 6'd20) ? (level - 6'd20) :
                          (level >= 6'd10) ? (level - 6'd10) :
@@ -205,8 +214,8 @@ module genius_datapath (
         .state_display_value(state_display_value),
         .game_leds(game_leds),
         .normal_hex0(normal_hex0),
-        .normal_hex1(normal_hex1),
-        .normal_hex2(normal_hex2),
+        .normal_hex1((show_seconds || show_record) ? normal_hex1 : 7'b1111111),
+        .normal_hex2((show_seconds || show_record) ? normal_hex2 : 7'b1111111),
         .leds(leds),
         .hex0(hex0),
         .hex1(hex1),

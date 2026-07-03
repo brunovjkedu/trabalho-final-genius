@@ -22,7 +22,7 @@ Entradas e saidas principais:
 - `SW[9]`: limite de niveis (`0` para 15, `1` para 32).
 - `LEDR[3:0]`: LEDs dos quatro simbolos.
 - `HEX0`: nivel atual.
-- `HEX1` e `HEX2`: tempo restante durante a entrada; recorde fora da entrada.
+- `HEX1` e `HEX2`: tempo restante durante a entrada; recorde em IDLE/VITORIA/DERROTA.
 - `HEX3`: estado atual.
 
 ## Estados exibidos no HEX3
@@ -42,7 +42,7 @@ Entradas e saidas principais:
   - `10`: 30 segundos
   - `11`: 15 segundos
 - Animacao de vitoria e derrota nos LEDs e displays.
-- Recorde em registrador, mostrado em HEX2/HEX1 quando nao esta na entrada.
+- Recorde em registrador, mostrado em HEX2/HEX1 no IDLE e no fim da partida.
 - Sequencia aumentada para ate 32 niveis, com seletor em SW9.
 
 ## Observacao sobre os diagramas parciais
