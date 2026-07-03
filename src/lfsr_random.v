@@ -10,6 +10,10 @@
  * O reset coloca o LFSR em 1011 para evitar o valor 0000, pois um LFSR travaria
  * se todos os bits fossem zero.
  *
+ * Enquanto seed_enable = 1, o LFSR tambem fica girando. No nosso jogo isso
+ * acontece no IDLE, antes da partida comecar. Como o jogador nunca liga o SW0
+ * exatamente no mesmo ciclo de clock, a sequencia comeca de pontos diferentes.
+ *
  * A saida simbolo_randomico usa apenas os 2 bits menos significativos do LFSR,
  * gerando valores de 0 a 3, que correspondem aos quatro botoes/LEDs do jogo.
  */
@@ -17,6 +21,7 @@ module lfsr_random (
     input clk,
     input rst,
     input enable,
+    input seed_enable,
     output [1:0] simbolo_randomico
 );
     reg [3:0] lfsr;
@@ -31,7 +36,7 @@ module lfsr_random (
     always @(posedge clk or posedge rst) begin
         if (rst) begin
             lfsr <= 4'b1011;
-        end else if (enable) begin
+        end else if (enable || seed_enable) begin
             /* Desloca os bits e coloca o feedback na posicao menos significativa. */
             lfsr <= {lfsr[2:0], feedback};
         end

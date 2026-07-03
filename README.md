@@ -45,6 +45,7 @@ Entradas e saidas principais:
 - Animacao de vitoria nos LEDs verdes; animacao de derrota nos LEDs vermelhos.
 - Recorde em registrador, mostrado em HEX2/HEX1 no IDLE e no fim da partida.
 - Sequencia aumentada para ate 32 niveis, com seletor em SW9.
+- LFSR girando em IDLE, para a sequencia variar conforme o instante em que o jogador inicia.
 
 ## Observacao sobre os diagramas parciais
 

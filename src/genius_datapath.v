@@ -65,6 +65,7 @@ module genius_datapath (
     wire [6:0] normal_hex0;
     wire [6:0] normal_hex1;
     wire [6:0] normal_hex2;
+    wire seed_enable;
 
     /* A mesma memoria e lida pela exibicao ou pela comparacao da entrada. */
     assign read_address = use_input_address ? input_count : show_count;
@@ -85,6 +86,7 @@ module genius_datapath (
     assign show_record = (state_display_value == 4'd0 ||
                           state_display_value == 4'd3 ||
                           state_display_value == 4'd4);
+    assign seed_enable = (state_display_value == 4'd0);
     assign display_number = show_seconds ? seconds_left :
                             show_record ? record :
                             6'd0;
@@ -98,6 +100,7 @@ module genius_datapath (
         .clk(clk),
         .rst(rst),
         .enable(lfsr_enable),
+        .seed_enable(seed_enable),
         .simbolo_randomico(random_symbol)
     );
 
