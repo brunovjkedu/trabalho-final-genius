@@ -18,8 +18,11 @@ Entradas e saidas principais:
 - `KEY[3:0]`: botoes das jogadas 0 a 3. Na placa DE1 os botoes sao ativos em zero, por isso o top inverte os sinais.
 - `SW[0]`: iniciar partida.
 - `SW[1]`: reset.
+- `SW[8:7]`: dificuldade.
+- `SW[9]`: limite de niveis (`0` para 15, `1` para 32).
 - `LEDR[3:0]`: LEDs dos quatro simbolos.
 - `HEX0`: nivel atual.
+- `HEX1` e `HEX2`: tempo restante durante a entrada; recorde fora da entrada.
 - `HEX3`: estado atual.
 
 ## Estados exibidos no HEX3
@@ -29,6 +32,18 @@ Entradas e saidas principais:
 - `2`: ENTRADA
 - `3`: VITORIA
 - `4`: DERROTA
+
+## Bonificacoes implementadas
+
+- Tempo restante no HEX2/HEX1 durante a entrada do jogador.
+- Quatro dificuldades em SW8/SW7:
+  - `00`: 60 segundos
+  - `01`: 45 segundos
+  - `10`: 30 segundos
+  - `11`: 15 segundos
+- Animacao de vitoria e derrota nos LEDs e displays.
+- Recorde em registrador, mostrado em HEX2/HEX1 quando nao esta na entrada.
+- Sequencia aumentada para ate 32 niveis, com seletor em SW9.
 
 ## Observacao sobre os diagramas parciais
 

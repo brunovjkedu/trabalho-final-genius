@@ -22,12 +22,13 @@ module tb_genius_all_cases;
     wire timer_clear;
     wire timer_enable;
     wire [1:0] timer_mode;
+    wire update_record;
     wire show_led_enable;
     wire use_input_address;
     wire [3:0] state_display_value;
-    wire [3:0] level;
-    wire [3:0] show_count;
-    wire [3:0] input_count;
+    wire [5:0] level;
+    wire [4:0] show_count;
+    wire [4:0] input_count;
     wire [1:0] played_symbol;
     wire has_button;
     wire compare_ok;
@@ -36,6 +37,8 @@ module tb_genius_all_cases;
     wire input_finished;
     wire [3:0] leds;
     wire [6:0] hex0;
+    wire [6:0] hex1;
+    wire [6:0] hex2;
     wire [6:0] hex3;
     wire [2:0] state;
 
@@ -61,6 +64,7 @@ module tb_genius_all_cases;
         .show_finished(show_finished),
         .input_finished(input_finished),
         .level(level),
+        .max_level(6'd32),
         .lfsr_enable(lfsr_enable),
         .mem_write(mem_write),
         .clear_level(clear_level),
@@ -72,6 +76,7 @@ module tb_genius_all_cases;
         .timer_clear(timer_clear),
         .timer_enable(timer_enable),
         .timer_mode(timer_mode),
+        .update_record(update_record),
         .show_led_enable(show_led_enable),
         .use_input_address(use_input_address),
         .state_display_value(state_display_value),
@@ -81,7 +86,11 @@ module tb_genius_all_cases;
     genius_datapath #(
         .SHOW_TICKS(3),
         .GAP_TICKS(2),
-        .INPUT_TICKS(30)
+        .ONE_SECOND_TICKS(3),
+        .EASY_SECONDS(6'd60),
+        .NORMAL_SECONDS(6'd45),
+        .HARD_SECONDS(6'd30),
+        .VERY_HARD_SECONDS(6'd15)
     ) datapath (
         .clk(clk),
         .rst(rst),
@@ -97,6 +106,8 @@ module tb_genius_all_cases;
         .timer_clear(timer_clear),
         .timer_enable(timer_enable),
         .timer_mode(timer_mode),
+        .difficulty(2'b00),
+        .update_record(update_record),
         .show_led_enable(show_led_enable),
         .use_input_address(use_input_address),
         .state_display_value(state_display_value),
@@ -111,6 +122,8 @@ module tb_genius_all_cases;
         .input_finished(input_finished),
         .leds(leds),
         .hex0(hex0),
+        .hex1(hex1),
+        .hex2(hex2),
         .hex3(hex3)
     );
 
@@ -191,7 +204,7 @@ module tb_genius_all_cases;
         if (state == LOSE) begin
             errors = errors + 1;
             $display("ERRO: jogador perdeu durante as tres rodadas corretas");
-        end else if (level < 4'd4) begin
+        end else if (level < 6'd4) begin
             errors = errors + 1;
             $display("ERRO: nivel nao avancou apos tres rodadas");
         end else begin
@@ -202,7 +215,7 @@ module tb_genius_all_cases;
         $display("Caso 2: jogador vence a partida");
         reset_game;
         start = 1'b1;
-        for (round_number = 1; round_number <= 15; round_number = round_number + 1) begin
+        for (round_number = 1; round_number <= 32; round_number = round_number + 1) begin
             play_current_round;
         end
         repeat (3) @(posedge clk);

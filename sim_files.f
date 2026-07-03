@@ -5,6 +5,9 @@ src/counter4.v
 src/sequence_compare.v
 src/led_driver.v
 src/seven_segment.v
+src/record_register.v
+src/decimal_digits.v
+src/animation_driver.v
 src/debouncer.v
 src/button_decoder.v
 src/timer.v

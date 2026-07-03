@@ -14,7 +14,8 @@ module genius_control (
     input timer_done,
     input show_finished,
     input input_finished,
-    input [3:0] level,
+    input [5:0] level,
+    input [5:0] max_level,
     output reg lfsr_enable,
     output reg mem_write,
     output reg clear_level,
@@ -26,6 +27,7 @@ module genius_control (
     output reg timer_clear,
     output reg timer_enable,
     output reg [1:0] timer_mode,
+    output reg update_record,
     output reg show_led_enable,
     output reg use_input_address,
     output reg [3:0] state_display_value,
@@ -76,7 +78,7 @@ module genius_control (
                 end else if (has_button && !compare_ok) begin
                     /* Jogador apertou um botao diferente do esperado. */
                     next_state = LOSE;
-                end else if (has_button && compare_ok && input_finished && level == 4'd15) begin
+                end else if (has_button && compare_ok && input_finished && level == max_level) begin
                     /* Ultimo nivel completado. */
                     next_state = WIN;
                 end else if (has_button && compare_ok && input_finished) begin
@@ -128,6 +130,7 @@ module genius_control (
         timer_clear = 1'b0;
         timer_enable = 1'b0;
         timer_mode = 2'd0;
+        update_record = 1'b0;
         show_led_enable = 1'b0;
         use_input_address = 1'b0;
         state_display_value = 4'd0;
@@ -179,11 +182,15 @@ module genius_control (
                 timer_enable = 1'b1;
                 timer_mode = 2'd2;
                 if (has_button) begin
-                    timer_clear = 1'b1;
                     if (compare_ok && !input_finished) begin
                         inc_input_count = 1'b1;
-                    end else if (compare_ok && input_finished && level < 4'd15) begin
+                    end else if (compare_ok && input_finished && level < max_level) begin
+                        timer_clear = 1'b1;
+                        update_record = 1'b1;
                         inc_level = 1'b1;
+                    end else if (compare_ok && input_finished) begin
+                        timer_clear = 1'b1;
+                        update_record = 1'b1;
                     end
                 end
             end
