@@ -36,6 +36,7 @@ module tb_genius_all_cases;
     wire show_finished;
     wire input_finished;
     wire [3:0] leds;
+    wire [7:0] green_leds;
     wire [6:0] hex0;
     wire [6:0] hex1;
     wire [6:0] hex2;
@@ -121,6 +122,7 @@ module tb_genius_all_cases;
         .show_finished(show_finished),
         .input_finished(input_finished),
         .leds(leds),
+        .green_leds(green_leds),
         .hex0(hex0),
         .hex1(hex1),
         .hex2(hex2),

@@ -2,8 +2,8 @@
  * Animacoes simples para vitoria e derrota.
  *
  * Fora dos estados finais, os LEDs normais do jogo passam direto.
- * Em vitoria, todos os LEDs piscam.
- * Em derrota, os LEDs alternam em pares.
+ * Em vitoria, os LEDs verdes piscam.
+ * Em derrota, os LEDs vermelhos alternam em pares.
  * Mantem HEX2/HEX1 com o recorde nos estados finais.
  * O HEX0 pode piscar como detalhe visual.
  * O HEX3 fica fora daqui para continuar mostrando 3 ou 4 como estado.
@@ -17,6 +17,7 @@ module animation_driver (
     input [6:0] normal_hex1,
     input [6:0] normal_hex2,
     output reg [3:0] leds,
+    output reg [7:0] green_leds,
     output reg [6:0] hex0,
     output reg [6:0] hex1,
     output reg [6:0] hex2
@@ -48,17 +49,20 @@ module animation_driver (
 
     always @(*) begin
         if (state_display_value == 4'd3) begin
-            leds = phase[0] ? 4'b1111 : 4'b0000;
+            leds = 4'b0000;
+            green_leds = phase[0] ? 8'b11111111 : 8'b00000000;
             hex2 = normal_hex2;
             hex1 = normal_hex1;
             hex0 = phase[0] ? normal_hex0 : HEX_BLANK;
         end else if (state_display_value == 4'd4) begin
             leds = phase[0] ? 4'b1010 : 4'b0101;
+            green_leds = 8'b00000000;
             hex2 = normal_hex2;
             hex1 = normal_hex1;
             hex0 = phase[0] ? HEX_DASH : HEX_BLANK;
         end else begin
             leds = game_leds;
+            green_leds = 8'b00000000;
             hex2 = normal_hex2;
             hex1 = normal_hex1;
             hex0 = normal_hex0;

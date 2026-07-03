@@ -35,6 +35,7 @@ module genius_datapath (
     output show_finished,
     output input_finished,
     output [3:0] leds,
+    output [7:0] green_leds,
     output [6:0] hex0,
     output [6:0] hex1,
     output [6:0] hex2,
@@ -217,6 +218,7 @@ module genius_datapath (
         .normal_hex1((show_seconds || show_record) ? normal_hex1 : 7'b1111111),
         .normal_hex2((show_seconds || show_record) ? normal_hex2 : 7'b1111111),
         .leds(leds),
+        .green_leds(green_leds),
         .hex0(hex0),
         .hex1(hex1),
         .hex2(hex2)
