@@ -4,7 +4,8 @@
  * Fora dos estados finais, os LEDs normais do jogo passam direto.
  * Em vitoria, todos os LEDs piscam.
  * Em derrota, os LEDs alternam em pares.
- * Tambem gera padroes simples para os displays HEX2, HEX1 e HEX0.
+ * Mantem HEX2/HEX1 com o recorde nos estados finais.
+ * O HEX0 pode piscar como detalhe visual.
  * O HEX3 fica fora daqui para continuar mostrando 3 ou 4 como estado.
  */
 module animation_driver (
@@ -27,10 +28,6 @@ module animation_driver (
 
     parameter HEX_BLANK = 7'b1111111;
     parameter HEX_DASH = 7'b0111111;
-    parameter HEX_1 = 7'b1111001;
-    parameter HEX_2 = 7'b0100100;
-    parameter HEX_3 = 7'b0110000;
-    parameter HEX_4 = 7'b0011001;
 
     always @(posedge clk or posedge rst) begin
         if (rst) begin
@@ -52,39 +49,14 @@ module animation_driver (
     always @(*) begin
         if (state_display_value == 4'd3) begin
             leds = phase[0] ? 4'b1111 : 4'b0000;
-            case (phase)
-                2'd0: begin
-                    hex2 = HEX_BLANK;
-                    hex1 = HEX_BLANK;
-                    hex0 = HEX_BLANK;
-                end
-                2'd1: begin
-                    hex2 = HEX_3;
-                    hex1 = HEX_BLANK;
-                    hex0 = HEX_BLANK;
-                end
-                2'd2: begin
-                    hex2 = HEX_3;
-                    hex1 = HEX_2;
-                    hex0 = HEX_BLANK;
-                end
-                default: begin
-                    hex2 = HEX_3;
-                    hex1 = HEX_2;
-                    hex0 = HEX_1;
-                end
-            endcase
+            hex2 = normal_hex2;
+            hex1 = normal_hex1;
+            hex0 = phase[0] ? normal_hex0 : HEX_BLANK;
         end else if (state_display_value == 4'd4) begin
             leds = phase[0] ? 4'b1010 : 4'b0101;
-            if (phase[0]) begin
-                hex2 = HEX_4;
-                hex1 = HEX_DASH;
-                hex0 = HEX_4;
-            end else begin
-                hex2 = HEX_DASH;
-                hex1 = HEX_4;
-                hex0 = HEX_DASH;
-            end
+            hex2 = normal_hex2;
+            hex1 = normal_hex1;
+            hex0 = phase[0] ? HEX_DASH : HEX_BLANK;
         end else begin
             leds = game_leds;
             hex2 = normal_hex2;
