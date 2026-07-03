@@ -38,6 +38,7 @@ module genius_control (
     parameter INPUT_WAIT = 3'd4;
     parameter WIN = 3'd5;
     parameter LOSE = 3'd6;
+    parameter ROUND_PAUSE = 3'd7;
 
     reg [2:0] next_state;
 
@@ -79,7 +80,12 @@ module genius_control (
                     /* Ultimo nivel completado. */
                     next_state = WIN;
                 end else if (has_button && compare_ok && input_finished) begin
-                    /* Rodada correta: adiciona mais um simbolo. */
+                    /* Rodada correta: faz uma pequena pausa antes da proxima. */
+                    next_state = ROUND_PAUSE;
+                end
+            end
+            ROUND_PAUSE: begin
+                if (timer_done) begin
                     next_state = ADD_SYMBOL;
                 end
             end
@@ -179,6 +185,19 @@ module genius_control (
                     end else if (compare_ok && input_finished && level < 4'd15) begin
                         inc_level = 1'b1;
                     end
+                end
+            end
+            ROUND_PAUSE: begin
+                /*
+                 * Pausa curta depois que o jogador acerta a rodada.
+                 * Os LEDs ficam apagados para separar o clique do jogador
+                 * da exibicao da proxima sequencia.
+                 */
+                state_display_value = 4'd2;
+                timer_enable = 1'b1;
+                timer_mode = 2'd1;
+                if (timer_done) begin
+                    timer_clear = 1'b1;
                 end
             end
             WIN: begin
