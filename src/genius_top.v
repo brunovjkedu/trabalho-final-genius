@@ -15,7 +15,7 @@ module genius_top (
 );
     parameter DEBOUNCE_COUNT = 250000;
     parameter SHOW_TICKS = 32'd25000000;
-    parameter GAP_TICKS = 32'd10000000;
+    parameter GAP_TICKS = 32'd20000000;
     parameter INPUT_TICKS = 32'd3000000000;
 
     wire rst;
