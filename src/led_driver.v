@@ -4,16 +4,16 @@
  * Recebe um simbolo de 0 a 3 e acende somente o LED correspondente.
  */
 module led_driver (
-    input enable,
-    input [1:0] symbol,
+    input habilita,
+    input [1:0] simbolo,
     output reg [3:0] leds
 );
     always @(*) begin
-        if (!enable) begin
+        if (!habilita) begin
             /* Durante intervalos ou entrada do jogador, LEDs ficam apagados. */
             leds = 4'b0000;
         end else begin
-            case (symbol)
+            case (simbolo)
                 2'd0: leds = 4'b0001;
                 2'd1: leds = 4'b0010;
                 2'd2: leds = 4'b0100;

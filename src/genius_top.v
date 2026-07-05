@@ -16,126 +16,126 @@ module genius_top (
     output [6:0] HEX2,
     output [6:0] HEX3
 );
-    parameter DEBOUNCE_COUNT = 250000;
-    parameter SHOW_TICKS = 32'd25000000;
-    parameter GAP_TICKS = 32'd20000000;
-    parameter ONE_SECOND_TICKS = 32'd50000000;
+    parameter TEMPO_DEBOUNCE = 250000;
+    parameter CICLOS_EXIBICAO = 32'd25000000;
+    parameter CICLOS_INTERVALO = 32'd20000000;
+    parameter CICLOS_UM_SEGUNDO = 32'd50000000;
 
-    wire rst;
-    wire start;
-    wire [3:0] key_pressed;
-    wire [3:0] key_pulses;
-    wire lfsr_enable;
-    wire mem_write;
-    wire clear_level;
-    wire inc_level;
-    wire clear_show_count;
-    wire inc_show_count;
-    wire clear_input_count;
-    wire inc_input_count;
-    wire timer_clear;
-    wire timer_enable;
-    wire [1:0] timer_mode;
-    wire update_record;
-    wire show_led_enable;
-    wire use_input_address;
-    wire [3:0] state_display_value;
-    wire [5:0] level;
-    wire [4:0] show_count;
-    wire [4:0] input_count;
-    wire [1:0] played_symbol;
-    wire has_button;
-    wire compare_ok;
-    wire timer_done;
-    wire show_finished;
-    wire input_finished;
-    wire [2:0] state;
-    wire [5:0] max_level;
+    wire reset;
+    wire iniciar;
+    wire [3:0] botoes_apertados;
+    wire [3:0] pulsos_botoes;
+    wire gera_simbolo;
+    wire escreve_memoria;
+    wire limpa_nivel;
+    wire incrementa_nivel;
+    wire limpa_contador_exibicao;
+    wire incrementa_contador_exibicao;
+    wire limpa_contador_entrada;
+    wire incrementa_contador_entrada;
+    wire zera_timer;
+    wire conta_timer;
+    wire [1:0] modo_timer;
+    wire atualiza_recorde;
+    wire liga_led_exibicao;
+    wire usa_endereco_entrada;
+    wire [3:0] estado_display;
+    wire [5:0] nivel;
+    wire [4:0] contador_exibicao;
+    wire [4:0] contador_entrada;
+    wire [1:0] simbolo_jogado;
+    wire tem_botao;
+    wire comparacao_ok;
+    wire tempo_terminou;
+    wire exibicao_finalizada;
+    wire entrada_finalizada;
+    wire [2:0] estado;
+    wire [5:0] nivel_maximo;
 
     /*
      * SW1 e reset, SW0 inicia a partida.
      * SW8/SW7 escolhem a dificuldade.
      * SW9 escolhe o limite: 0 = 15 niveis, 1 = 32 niveis.
      */
-    assign rst = SW[1];
-    assign start = SW[0];
-    assign max_level = SW[9] ? 6'd32 : 6'd15;
+    assign reset = SW[1];
+    assign iniciar = SW[0];
+    assign nivel_maximo = SW[9] ? 6'd32 : 6'd15;
 
     /* Na DE1 os botoes KEY sao ativos em zero, por isso invertemos. */
-    assign key_pressed = ~KEY;
+    assign botoes_apertados = ~KEY;
 
     /* 7.9 - Debouncer: cada botao passa por um filtro antes de chegar ao jogo. */
-    debouncer #(.STABLE_COUNT(DEBOUNCE_COUNT)) db0 (.clk(CLOCK_50), .rst(rst), .noisy(key_pressed[0]), .pulse(key_pulses[0]));
-    debouncer #(.STABLE_COUNT(DEBOUNCE_COUNT)) db1 (.clk(CLOCK_50), .rst(rst), .noisy(key_pressed[1]), .pulse(key_pulses[1]));
-    debouncer #(.STABLE_COUNT(DEBOUNCE_COUNT)) db2 (.clk(CLOCK_50), .rst(rst), .noisy(key_pressed[2]), .pulse(key_pulses[2]));
-    debouncer #(.STABLE_COUNT(DEBOUNCE_COUNT)) db3 (.clk(CLOCK_50), .rst(rst), .noisy(key_pressed[3]), .pulse(key_pulses[3]));
+    debouncer #(.TEMPO_ESTAVEL(TEMPO_DEBOUNCE)) db0 (.clk(CLOCK_50), .reset(reset), .entrada_ruidosa(botoes_apertados[0]), .pulso(pulsos_botoes[0]));
+    debouncer #(.TEMPO_ESTAVEL(TEMPO_DEBOUNCE)) db1 (.clk(CLOCK_50), .reset(reset), .entrada_ruidosa(botoes_apertados[1]), .pulso(pulsos_botoes[1]));
+    debouncer #(.TEMPO_ESTAVEL(TEMPO_DEBOUNCE)) db2 (.clk(CLOCK_50), .reset(reset), .entrada_ruidosa(botoes_apertados[2]), .pulso(pulsos_botoes[2]));
+    debouncer #(.TEMPO_ESTAVEL(TEMPO_DEBOUNCE)) db3 (.clk(CLOCK_50), .reset(reset), .entrada_ruidosa(botoes_apertados[3]), .pulso(pulsos_botoes[3]));
 
     /* A unidade de controle gera os sinais que comandam o datapath. */
-    genius_control control (
+    genius_control controle (
         .clk(CLOCK_50),
-        .rst(rst),
-        .start(start),
-        .has_button(has_button),
-        .compare_ok(compare_ok),
-        .timer_done(timer_done),
-        .show_finished(show_finished),
-        .input_finished(input_finished),
-        .level(level),
-        .max_level(max_level),
-        .lfsr_enable(lfsr_enable),
-        .mem_write(mem_write),
-        .clear_level(clear_level),
-        .inc_level(inc_level),
-        .clear_show_count(clear_show_count),
-        .inc_show_count(inc_show_count),
-        .clear_input_count(clear_input_count),
-        .inc_input_count(inc_input_count),
-        .timer_clear(timer_clear),
-        .timer_enable(timer_enable),
-        .timer_mode(timer_mode),
-        .update_record(update_record),
-        .show_led_enable(show_led_enable),
-        .use_input_address(use_input_address),
-        .state_display_value(state_display_value),
-        .state(state)
+        .reset(reset),
+        .iniciar(iniciar),
+        .tem_botao(tem_botao),
+        .comparacao_ok(comparacao_ok),
+        .tempo_terminou(tempo_terminou),
+        .exibicao_finalizada(exibicao_finalizada),
+        .entrada_finalizada(entrada_finalizada),
+        .nivel(nivel),
+        .nivel_maximo(nivel_maximo),
+        .gera_simbolo(gera_simbolo),
+        .escreve_memoria(escreve_memoria),
+        .limpa_nivel(limpa_nivel),
+        .incrementa_nivel(incrementa_nivel),
+        .limpa_contador_exibicao(limpa_contador_exibicao),
+        .incrementa_contador_exibicao(incrementa_contador_exibicao),
+        .limpa_contador_entrada(limpa_contador_entrada),
+        .incrementa_contador_entrada(incrementa_contador_entrada),
+        .zera_timer(zera_timer),
+        .conta_timer(conta_timer),
+        .modo_timer(modo_timer),
+        .atualiza_recorde(atualiza_recorde),
+        .liga_led_exibicao(liga_led_exibicao),
+        .usa_endereco_entrada(usa_endereco_entrada),
+        .estado_display(estado_display),
+        .estado(estado)
     );
 
     /* O datapath guarda a sequencia, compara jogadas e controla saidas visuais. */
     genius_datapath #(
-        .SHOW_TICKS(SHOW_TICKS),
-        .GAP_TICKS(GAP_TICKS),
-        .ONE_SECOND_TICKS(ONE_SECOND_TICKS)
+        .CICLOS_EXIBICAO(CICLOS_EXIBICAO),
+        .CICLOS_INTERVALO(CICLOS_INTERVALO),
+        .CICLOS_UM_SEGUNDO(CICLOS_UM_SEGUNDO)
     ) datapath (
         .clk(CLOCK_50),
-        .rst(rst),
-        .key_pulses(key_pulses),
-        .lfsr_enable(lfsr_enable),
-        .mem_write(mem_write),
-        .clear_level(clear_level),
-        .inc_level(inc_level),
-        .clear_show_count(clear_show_count),
-        .inc_show_count(inc_show_count),
-        .clear_input_count(clear_input_count),
-        .inc_input_count(inc_input_count),
-        .timer_clear(timer_clear),
-        .timer_enable(timer_enable),
-        .timer_mode(timer_mode),
-        .difficulty(SW[8:7]),
-        .update_record(update_record),
-        .show_led_enable(show_led_enable),
-        .use_input_address(use_input_address),
-        .state_display_value(state_display_value),
-        .level(level),
-        .show_count(show_count),
-        .input_count(input_count),
-        .played_symbol(played_symbol),
-        .has_button(has_button),
-        .compare_ok(compare_ok),
-        .timer_done(timer_done),
-        .show_finished(show_finished),
-        .input_finished(input_finished),
+        .reset(reset),
+        .pulsos_botoes(pulsos_botoes),
+        .gera_simbolo(gera_simbolo),
+        .escreve_memoria(escreve_memoria),
+        .limpa_nivel(limpa_nivel),
+        .incrementa_nivel(incrementa_nivel),
+        .limpa_contador_exibicao(limpa_contador_exibicao),
+        .incrementa_contador_exibicao(incrementa_contador_exibicao),
+        .limpa_contador_entrada(limpa_contador_entrada),
+        .incrementa_contador_entrada(incrementa_contador_entrada),
+        .zera_timer(zera_timer),
+        .conta_timer(conta_timer),
+        .modo_timer(modo_timer),
+        .dificuldade(SW[8:7]),
+        .atualiza_recorde(atualiza_recorde),
+        .liga_led_exibicao(liga_led_exibicao),
+        .usa_endereco_entrada(usa_endereco_entrada),
+        .estado_display(estado_display),
+        .nivel(nivel),
+        .contador_exibicao(contador_exibicao),
+        .contador_entrada(contador_entrada),
+        .simbolo_jogado(simbolo_jogado),
+        .tem_botao(tem_botao),
+        .comparacao_ok(comparacao_ok),
+        .tempo_terminou(tempo_terminou),
+        .exibicao_finalizada(exibicao_finalizada),
+        .entrada_finalizada(entrada_finalizada),
         .leds(LEDR),
-        .green_leds(LEDG),
+        .leds_verdes(LEDG),
         .hex0(HEX0),
         .hex1(HEX1),
         .hex2(HEX2),

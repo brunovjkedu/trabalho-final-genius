@@ -7,122 +7,122 @@
  */
 module tb_genius_all_cases;
     reg clk;
-    reg rst;
-    reg start;
-    reg [3:0] key_pulses;
+    reg reset;
+    reg iniciar;
+    reg [3:0] pulsos_botoes;
 
-    wire lfsr_enable;
-    wire mem_write;
-    wire clear_level;
-    wire inc_level;
-    wire clear_show_count;
-    wire inc_show_count;
-    wire clear_input_count;
-    wire inc_input_count;
-    wire timer_clear;
-    wire timer_enable;
-    wire [1:0] timer_mode;
-    wire update_record;
-    wire show_led_enable;
-    wire use_input_address;
-    wire [3:0] state_display_value;
-    wire [5:0] level;
-    wire [4:0] show_count;
-    wire [4:0] input_count;
-    wire [1:0] played_symbol;
-    wire has_button;
-    wire compare_ok;
-    wire timer_done;
-    wire show_finished;
-    wire input_finished;
+    wire gera_simbolo;
+    wire escreve_memoria;
+    wire limpa_nivel;
+    wire incrementa_nivel;
+    wire limpa_contador_exibicao;
+    wire incrementa_contador_exibicao;
+    wire limpa_contador_entrada;
+    wire incrementa_contador_entrada;
+    wire zera_timer;
+    wire conta_timer;
+    wire [1:0] modo_timer;
+    wire atualiza_recorde;
+    wire liga_led_exibicao;
+    wire usa_endereco_entrada;
+    wire [3:0] estado_display;
+    wire [5:0] nivel;
+    wire [4:0] contador_exibicao;
+    wire [4:0] contador_entrada;
+    wire [1:0] simbolo_jogado;
+    wire tem_botao;
+    wire comparacao_ok;
+    wire tempo_terminou;
+    wire exibicao_finalizada;
+    wire entrada_finalizada;
     wire [3:0] leds;
-    wire [7:0] green_leds;
+    wire [7:0] leds_verdes;
     wire [6:0] hex0;
     wire [6:0] hex1;
     wire [6:0] hex2;
     wire [6:0] hex3;
-    wire [2:0] state;
+    wire [2:0] estado;
 
-    integer errors;
-    integer i;
-    integer round_number;
+    integer erros;
+    integer indice;
+    integer numero_rodada;
 
-    parameter IDLE = 3'd0;
-    parameter ADD_SYMBOL = 3'd1;
-    parameter SHOW_ON = 3'd2;
-    parameter SHOW_OFF = 3'd3;
-    parameter INPUT_WAIT = 3'd4;
-    parameter WIN = 3'd5;
-    parameter LOSE = 3'd6;
+    parameter ESPERANDO = 3'd0;
+    parameter ADICIONA_SIMBOLO = 3'd1;
+    parameter MOSTRA_LED = 3'd2;
+    parameter APAGA_LED = 3'd3;
+    parameter ESPERA_ENTRADA = 3'd4;
+    parameter VITORIA = 3'd5;
+    parameter DERROTA = 3'd6;
 
-    genius_control control (
+    genius_control controle (
         .clk(clk),
-        .rst(rst),
-        .start(start),
-        .has_button(has_button),
-        .compare_ok(compare_ok),
-        .timer_done(timer_done),
-        .show_finished(show_finished),
-        .input_finished(input_finished),
-        .level(level),
-        .max_level(6'd32),
-        .lfsr_enable(lfsr_enable),
-        .mem_write(mem_write),
-        .clear_level(clear_level),
-        .inc_level(inc_level),
-        .clear_show_count(clear_show_count),
-        .inc_show_count(inc_show_count),
-        .clear_input_count(clear_input_count),
-        .inc_input_count(inc_input_count),
-        .timer_clear(timer_clear),
-        .timer_enable(timer_enable),
-        .timer_mode(timer_mode),
-        .update_record(update_record),
-        .show_led_enable(show_led_enable),
-        .use_input_address(use_input_address),
-        .state_display_value(state_display_value),
-        .state(state)
+        .reset(reset),
+        .iniciar(iniciar),
+        .tem_botao(tem_botao),
+        .comparacao_ok(comparacao_ok),
+        .tempo_terminou(tempo_terminou),
+        .exibicao_finalizada(exibicao_finalizada),
+        .entrada_finalizada(entrada_finalizada),
+        .nivel(nivel),
+        .nivel_maximo(6'd32),
+        .gera_simbolo(gera_simbolo),
+        .escreve_memoria(escreve_memoria),
+        .limpa_nivel(limpa_nivel),
+        .incrementa_nivel(incrementa_nivel),
+        .limpa_contador_exibicao(limpa_contador_exibicao),
+        .incrementa_contador_exibicao(incrementa_contador_exibicao),
+        .limpa_contador_entrada(limpa_contador_entrada),
+        .incrementa_contador_entrada(incrementa_contador_entrada),
+        .zera_timer(zera_timer),
+        .conta_timer(conta_timer),
+        .modo_timer(modo_timer),
+        .atualiza_recorde(atualiza_recorde),
+        .liga_led_exibicao(liga_led_exibicao),
+        .usa_endereco_entrada(usa_endereco_entrada),
+        .estado_display(estado_display),
+        .estado(estado)
     );
 
     genius_datapath #(
-        .SHOW_TICKS(3),
-        .GAP_TICKS(2),
-        .ONE_SECOND_TICKS(3),
-        .EASY_SECONDS(6'd60),
-        .NORMAL_SECONDS(6'd45),
-        .HARD_SECONDS(6'd30),
-        .VERY_HARD_SECONDS(6'd15)
+        .CICLOS_EXIBICAO(3),
+        .CICLOS_INTERVALO(2),
+        .CICLOS_UM_SEGUNDO(3),
+        .SEGUNDOS_FACIL(6'd60),
+        .SEGUNDOS_NORMAL(6'd45),
+        .SEGUNDOS_DIFICIL(6'd30),
+        .SEGUNDOS_MUITO_DIFICIL(6'd15)
     ) datapath (
         .clk(clk),
-        .rst(rst),
-        .key_pulses(key_pulses),
-        .lfsr_enable(lfsr_enable),
-        .mem_write(mem_write),
-        .clear_level(clear_level),
-        .inc_level(inc_level),
-        .clear_show_count(clear_show_count),
-        .inc_show_count(inc_show_count),
-        .clear_input_count(clear_input_count),
-        .inc_input_count(inc_input_count),
-        .timer_clear(timer_clear),
-        .timer_enable(timer_enable),
-        .timer_mode(timer_mode),
-        .difficulty(2'b00),
-        .update_record(update_record),
-        .show_led_enable(show_led_enable),
-        .use_input_address(use_input_address),
-        .state_display_value(state_display_value),
-        .level(level),
-        .show_count(show_count),
-        .input_count(input_count),
-        .played_symbol(played_symbol),
-        .has_button(has_button),
-        .compare_ok(compare_ok),
-        .timer_done(timer_done),
-        .show_finished(show_finished),
-        .input_finished(input_finished),
+        .reset(reset),
+        .pulsos_botoes(pulsos_botoes),
+        .gera_simbolo(gera_simbolo),
+        .escreve_memoria(escreve_memoria),
+        .limpa_nivel(limpa_nivel),
+        .incrementa_nivel(incrementa_nivel),
+        .limpa_contador_exibicao(limpa_contador_exibicao),
+        .incrementa_contador_exibicao(incrementa_contador_exibicao),
+        .limpa_contador_entrada(limpa_contador_entrada),
+        .incrementa_contador_entrada(incrementa_contador_entrada),
+        .zera_timer(zera_timer),
+        .conta_timer(conta_timer),
+        .modo_timer(modo_timer),
+        .dificuldade(2'b00),
+        .atualiza_recorde(atualiza_recorde),
+        .liga_led_exibicao(liga_led_exibicao),
+        .usa_endereco_entrada(usa_endereco_entrada),
+        .estado_display(estado_display),
+        .nivel(nivel),
+        .contador_exibicao(contador_exibicao),
+        .contador_entrada(contador_entrada),
+        .simbolo_jogado(simbolo_jogado),
+        .tem_botao(tem_botao),
+        .comparacao_ok(comparacao_ok),
+        .tempo_terminou(tempo_terminou),
+        .exibicao_finalizada(exibicao_finalizada),
+        .entrada_finalizada(entrada_finalizada),
         .leds(leds),
-        .green_leds(green_leds),
+        .leds_verdes(leds_verdes),
         .hex0(hex0),
         .hex1(hex1),
         .hex2(hex2),
@@ -135,79 +135,79 @@ module tb_genius_all_cases;
         forever #5 clk = ~clk;
     end
 
-    task reset_game;
+    task resetar_jogo;
         begin
             /* Coloca o circuito em um estado conhecido antes de cada caso. */
-            rst = 1'b1;
-            start = 1'b0;
-            key_pulses = 4'b0000;
+            reset = 1'b1;
+            iniciar = 1'b0;
+            pulsos_botoes = 4'b0000;
             repeat (3) @(posedge clk);
-            rst = 1'b0;
+            reset = 1'b0;
             repeat (2) @(posedge clk);
         end
     endtask
 
-    task press_symbol;
-        input [1:0] symbol;
+    task apertar_simbolo;
+        input [1:0] simbolo;
         begin
             /* Gera um pulso de um ciclo no botao correspondente ao simbolo. */
             @(negedge clk);
-            key_pulses = 4'b0001 << symbol;
+            pulsos_botoes = 4'b0001 << simbolo;
             @(negedge clk);
-            key_pulses = 4'b0000;
+            pulsos_botoes = 4'b0000;
             repeat (2) @(posedge clk);
         end
     endtask
 
-    task wait_input_state;
+    task esperar_estado_entrada;
         begin
             /* Espera a FSM terminar a exibicao e liberar a entrada. */
-            while (state != INPUT_WAIT) begin
+            while (estado != ESPERA_ENTRADA) begin
                 @(posedge clk);
             end
             @(posedge clk);
         end
     endtask
 
-    task play_current_round;
+    task jogar_rodada_atual;
         begin
-            wait_input_state;
+            esperar_estado_entrada;
             /* Reproduz a sequencia correta lendo a memoria interna do datapath. */
-            for (i = 0; i < level; i = i + 1) begin
-                press_symbol(datapath.memory.memory[i]);
+            for (indice = 0; indice < nivel; indice = indice + 1) begin
+                apertar_simbolo(datapath.memoria.memoria[indice]);
             end
         end
     endtask
 
-    task check_state;
-        input [2:0] expected;
-        input [120:0] message;
+    task verificar_estado;
+        input [2:0] esperado;
+        input [120:0] mensagem;
         begin
-            if (state != expected) begin
-                errors = errors + 1;
-                $display("ERRO: %s", message);
+            if (estado != esperado) begin
+                erros = erros + 1;
+                $display("ERRO: %s", mensagem);
             end else begin
-                $display("OK: %s", message);
+                $display("OK: %s", mensagem);
             end
         end
     endtask
 
     initial begin
-        errors = 0;
+        erros = 0;
 
         /* Caso 1 do enunciado. */
         $display("Caso 1: jogador completa tres rodadas consecutivas");
-        reset_game;
-        start = 1'b1;
-        play_current_round;
-        play_current_round;
-        play_current_round;
+        resetar_jogo;
+        iniciar = 1'b1;
+        jogar_rodada_atual;
+        jogar_rodada_atual;
+        jogar_rodada_atual;
         repeat (3) @(posedge clk);
-        if (state == LOSE) begin
-            errors = errors + 1;
+        if (estado == DERROTA) begin
+            erros = erros + 1;
             $display("ERRO: jogador perdeu durante as tres rodadas corretas");
-        end else if (level < 6'd4) begin
-            errors = errors + 1;
+        end else if (nivel < 6'd4) begin
+            erros = erros + 1;
             $display("ERRO: nivel nao avancou apos tres rodadas");
         end else begin
             $display("OK: tres rodadas corretas foram aceitas");
@@ -215,42 +215,42 @@ module tb_genius_all_cases;
 
         /* Caso 2 do enunciado. */
         $display("Caso 2: jogador vence a partida");
-        reset_game;
-        start = 1'b1;
-        for (round_number = 1; round_number <= 32; round_number = round_number + 1) begin
-            play_current_round;
+        resetar_jogo;
+        iniciar = 1'b1;
+        for (numero_rodada = 1; numero_rodada <= 32; numero_rodada = numero_rodada + 1) begin
+            jogar_rodada_atual;
         end
         repeat (3) @(posedge clk);
-        check_state(WIN, "estado final deve ser WIN");
+        verificar_estado(VITORIA, "estado final deve ser VITORIA");
 
         /* Caso 3 do enunciado. */
         $display("Caso 3: reset durante a execucao");
-        reset_game;
-        start = 1'b1;
-        while (state != SHOW_ON) begin
+        resetar_jogo;
+        iniciar = 1'b1;
+        while (estado != MOSTRA_LED) begin
             @(posedge clk);
         end
-        rst = 1'b1;
-        start = 1'b0;
+        reset = 1'b1;
+        iniciar = 1'b0;
         repeat (2) @(posedge clk);
-        rst = 1'b0;
+        reset = 1'b0;
         repeat (2) @(posedge clk);
-        check_state(IDLE, "reset deve retornar para IDLE");
+        verificar_estado(ESPERANDO, "reset deve retornar para ESPERANDO");
 
         /* Caso 4 do enunciado. */
         $display("Caso 4: timeout da entrada do jogador");
-        reset_game;
-        start = 1'b1;
-        wait_input_state;
-        while (state != LOSE) begin
+        resetar_jogo;
+        iniciar = 1'b1;
+        esperar_estado_entrada;
+        while (estado != DERROTA) begin
             @(posedge clk);
         end
-        check_state(LOSE, "timeout deve levar para LOSE");
+        verificar_estado(DERROTA, "timeout deve levar para DERROTA");
 
-        if (errors == 0) begin
+        if (erros == 0) begin
             $display("Todos os casos passaram.");
         end else begin
-            $display("Total de erros: %0d", errors);
+            $display("Total de erros: %0d", erros);
         end
 
         $finish;

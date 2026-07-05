@@ -7,214 +7,214 @@
  */
 module genius_control (
     input clk,
-    input rst,
-    input start,
-    input has_button,
-    input compare_ok,
-    input timer_done,
-    input show_finished,
-    input input_finished,
-    input [5:0] level,
-    input [5:0] max_level,
-    output reg lfsr_enable,
-    output reg mem_write,
-    output reg clear_level,
-    output reg inc_level,
-    output reg clear_show_count,
-    output reg inc_show_count,
-    output reg clear_input_count,
-    output reg inc_input_count,
-    output reg timer_clear,
-    output reg timer_enable,
-    output reg [1:0] timer_mode,
-    output reg update_record,
-    output reg show_led_enable,
-    output reg use_input_address,
-    output reg [3:0] state_display_value,
-    output reg [2:0] state
+    input reset,
+    input iniciar,
+    input tem_botao,
+    input comparacao_ok,
+    input tempo_terminou,
+    input exibicao_finalizada,
+    input entrada_finalizada,
+    input [5:0] nivel,
+    input [5:0] nivel_maximo,
+    output reg gera_simbolo,
+    output reg escreve_memoria,
+    output reg limpa_nivel,
+    output reg incrementa_nivel,
+    output reg limpa_contador_exibicao,
+    output reg incrementa_contador_exibicao,
+    output reg limpa_contador_entrada,
+    output reg incrementa_contador_entrada,
+    output reg zera_timer,
+    output reg conta_timer,
+    output reg [1:0] modo_timer,
+    output reg atualiza_recorde,
+    output reg liga_led_exibicao,
+    output reg usa_endereco_entrada,
+    output reg [3:0] estado_display,
+    output reg [2:0] estado
 );
-    parameter IDLE = 3'd0;
-    parameter ADD_SYMBOL = 3'd1;
-    parameter SHOW_ON = 3'd2;
-    parameter SHOW_OFF = 3'd3;
-    parameter INPUT_WAIT = 3'd4;
-    parameter WIN = 3'd5;
-    parameter LOSE = 3'd6;
-    parameter ROUND_PAUSE = 3'd7;
+    parameter ESPERANDO = 3'd0;
+    parameter ADICIONA_SIMBOLO = 3'd1;
+    parameter MOSTRA_LED = 3'd2;
+    parameter APAGA_LED = 3'd3;
+    parameter ESPERA_ENTRADA = 3'd4;
+    parameter VITORIA = 3'd5;
+    parameter DERROTA = 3'd6;
+    parameter PAUSA_RODADA = 3'd7;
 
-    reg [2:0] next_state;
+    reg [2:0] proximo_estado;
 
     /* Logica combinacional da proxima transicao de estado. */
     always @(*) begin
-        next_state = state;
+        proximo_estado = estado;
 
-        case (state)
-            IDLE: begin
-                if (start) begin
+        case (estado)
+            ESPERANDO: begin
+                if (iniciar) begin
                     /* SW0 inicia uma nova partida. */
-                    next_state = ADD_SYMBOL;
+                    proximo_estado = ADICIONA_SIMBOLO;
                 end
             end
-            ADD_SYMBOL: begin
+            ADICIONA_SIMBOLO: begin
                 /* Grava o novo simbolo e depois passa para exibicao. */
-                next_state = SHOW_ON;
+                proximo_estado = MOSTRA_LED;
             end
-            SHOW_ON: begin
-                if (timer_done) begin
-                    next_state = SHOW_OFF;
+            MOSTRA_LED: begin
+                if (tempo_terminou) begin
+                    proximo_estado = APAGA_LED;
                 end
             end
-            SHOW_OFF: begin
-                if (timer_done && show_finished) begin
-                    next_state = INPUT_WAIT;
-                end else if (timer_done) begin
-                    next_state = SHOW_ON;
+            APAGA_LED: begin
+                if (tempo_terminou && exibicao_finalizada) begin
+                    proximo_estado = ESPERA_ENTRADA;
+                end else if (tempo_terminou) begin
+                    proximo_estado = MOSTRA_LED;
                 end
             end
-            INPUT_WAIT: begin
-                if (timer_done) begin
+            ESPERA_ENTRADA: begin
+                if (tempo_terminou) begin
                     /* Acabou o tempo de resposta do jogador. */
-                    next_state = LOSE;
-                end else if (has_button && !compare_ok) begin
+                    proximo_estado = DERROTA;
+                end else if (tem_botao && !comparacao_ok) begin
                     /* Jogador apertou um botao diferente do esperado. */
-                    next_state = LOSE;
-                end else if (has_button && compare_ok && input_finished && level == max_level) begin
+                    proximo_estado = DERROTA;
+                end else if (tem_botao && comparacao_ok && entrada_finalizada && nivel == nivel_maximo) begin
                     /* Ultimo nivel completado. */
-                    next_state = WIN;
-                end else if (has_button && compare_ok && input_finished) begin
+                    proximo_estado = VITORIA;
+                end else if (tem_botao && comparacao_ok && entrada_finalizada) begin
                     /* Rodada correta: faz uma pequena pausa antes da proxima. */
-                    next_state = ROUND_PAUSE;
+                    proximo_estado = PAUSA_RODADA;
                 end
             end
-            ROUND_PAUSE: begin
-                if (timer_done) begin
-                    next_state = ADD_SYMBOL;
+            PAUSA_RODADA: begin
+                if (tempo_terminou) begin
+                    proximo_estado = ADICIONA_SIMBOLO;
                 end
             end
-            WIN: begin
-                if (!start) begin
-                    next_state = IDLE;
+            VITORIA: begin
+                if (!iniciar) begin
+                    proximo_estado = ESPERANDO;
                 end
             end
-            LOSE: begin
-                if (!start) begin
-                    next_state = IDLE;
+            DERROTA: begin
+                if (!iniciar) begin
+                    proximo_estado = ESPERANDO;
                 end
             end
             default: begin
-                next_state = IDLE;
+                proximo_estado = ESPERANDO;
             end
         endcase
     end
 
     /* Registrador de estado da FSM. */
-    always @(posedge clk or posedge rst) begin
-        if (rst) begin
-            state <= IDLE;
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            estado <= ESPERANDO;
         end else begin
-            state <= next_state;
+            estado <= proximo_estado;
         end
     end
 
     /* Sinais de saida da FSM para comandar o datapath. */
     always @(*) begin
         /* Valores padrao evitam sinais ficando ligados sem querer. */
-        lfsr_enable = 1'b0;
-        mem_write = 1'b0;
-        clear_level = 1'b0;
-        inc_level = 1'b0;
-        clear_show_count = 1'b0;
-        inc_show_count = 1'b0;
-        clear_input_count = 1'b0;
-        inc_input_count = 1'b0;
-        timer_clear = 1'b0;
-        timer_enable = 1'b0;
-        timer_mode = 2'd0;
-        update_record = 1'b0;
-        show_led_enable = 1'b0;
-        use_input_address = 1'b0;
-        state_display_value = 4'd0;
+        gera_simbolo = 1'b0;
+        escreve_memoria = 1'b0;
+        limpa_nivel = 1'b0;
+        incrementa_nivel = 1'b0;
+        limpa_contador_exibicao = 1'b0;
+        incrementa_contador_exibicao = 1'b0;
+        limpa_contador_entrada = 1'b0;
+        incrementa_contador_entrada = 1'b0;
+        zera_timer = 1'b0;
+        conta_timer = 1'b0;
+        modo_timer = 2'd0;
+        atualiza_recorde = 1'b0;
+        liga_led_exibicao = 1'b0;
+        usa_endereco_entrada = 1'b0;
+        estado_display = 4'd0;
 
-        case (state)
-            IDLE: begin
+        case (estado)
+            ESPERANDO: begin
                 /* Sistema parado, esperando iniciar. */
-                state_display_value = 4'd0;
-                clear_level = 1'b1;
-                clear_show_count = 1'b1;
-                clear_input_count = 1'b1;
-                timer_clear = 1'b1;
+                estado_display = 4'd0;
+                limpa_nivel = 1'b1;
+                limpa_contador_exibicao = 1'b1;
+                limpa_contador_entrada = 1'b1;
+                zera_timer = 1'b1;
             end
-            ADD_SYMBOL: begin
+            ADICIONA_SIMBOLO: begin
                 /* Gera e grava o novo simbolo no final da sequencia. */
-                state_display_value = 4'd1;
-                lfsr_enable = 1'b1;
-                mem_write = 1'b1;
-                clear_show_count = 1'b1;
-                clear_input_count = 1'b1;
-                timer_clear = 1'b1;
+                estado_display = 4'd1;
+                gera_simbolo = 1'b1;
+                escreve_memoria = 1'b1;
+                limpa_contador_exibicao = 1'b1;
+                limpa_contador_entrada = 1'b1;
+                zera_timer = 1'b1;
             end
-            SHOW_ON: begin
+            MOSTRA_LED: begin
                 /* Mostra o LED atual por um tempo definido. */
-                state_display_value = 4'd1;
-                show_led_enable = 1'b1;
-                timer_enable = 1'b1;
-                timer_mode = 2'd0;
-                if (timer_done) begin
-                    timer_clear = 1'b1;
+                estado_display = 4'd1;
+                liga_led_exibicao = 1'b1;
+                conta_timer = 1'b1;
+                modo_timer = 2'd0;
+                if (tempo_terminou) begin
+                    zera_timer = 1'b1;
                 end
             end
-            SHOW_OFF: begin
+            APAGA_LED: begin
                 /* Intervalo com LEDs apagados entre um simbolo e outro. */
-                state_display_value = 4'd1;
-                timer_enable = 1'b1;
-                timer_mode = 2'd1;
-                if (timer_done) begin
-                    timer_clear = 1'b1;
-                    if (!show_finished) begin
-                        inc_show_count = 1'b1;
+                estado_display = 4'd1;
+                conta_timer = 1'b1;
+                modo_timer = 2'd1;
+                if (tempo_terminou) begin
+                    zera_timer = 1'b1;
+                    if (!exibicao_finalizada) begin
+                        incrementa_contador_exibicao = 1'b1;
                     end
                 end
             end
-            INPUT_WAIT: begin
+            ESPERA_ENTRADA: begin
                 /* Espera o jogador repetir a sequencia. */
-                state_display_value = 4'd2;
-                use_input_address = 1'b1;
-                timer_enable = 1'b1;
-                timer_mode = 2'd2;
-                if (has_button) begin
-                    if (compare_ok && !input_finished) begin
-                        inc_input_count = 1'b1;
-                    end else if (compare_ok && input_finished && level < max_level) begin
-                        timer_clear = 1'b1;
-                        update_record = 1'b1;
-                        inc_level = 1'b1;
-                    end else if (compare_ok && input_finished) begin
-                        timer_clear = 1'b1;
-                        update_record = 1'b1;
+                estado_display = 4'd2;
+                usa_endereco_entrada = 1'b1;
+                conta_timer = 1'b1;
+                modo_timer = 2'd2;
+                if (tem_botao) begin
+                    if (comparacao_ok && !entrada_finalizada) begin
+                        incrementa_contador_entrada = 1'b1;
+                    end else if (comparacao_ok && entrada_finalizada && nivel < nivel_maximo) begin
+                        zera_timer = 1'b1;
+                        atualiza_recorde = 1'b1;
+                        incrementa_nivel = 1'b1;
+                    end else if (comparacao_ok && entrada_finalizada) begin
+                        zera_timer = 1'b1;
+                        atualiza_recorde = 1'b1;
                     end
                 end
             end
-            ROUND_PAUSE: begin
+            PAUSA_RODADA: begin
                 /*
                  * Pausa curta depois que o jogador acerta a rodada.
                  * Os LEDs ficam apagados para separar o clique do jogador
                  * da exibicao da proxima sequencia.
                  */
-                state_display_value = 4'd2;
-                timer_enable = 1'b1;
-                timer_mode = 2'd1;
-                if (timer_done) begin
-                    timer_clear = 1'b1;
+                estado_display = 4'd2;
+                conta_timer = 1'b1;
+                modo_timer = 2'd1;
+                if (tempo_terminou) begin
+                    zera_timer = 1'b1;
                 end
             end
-            WIN: begin
+            VITORIA: begin
                 /* Vitoria: mostra estado 3 no display. */
-                state_display_value = 4'd3;
-                show_led_enable = 1'b1;
+                estado_display = 4'd3;
+                liga_led_exibicao = 1'b1;
             end
-            LOSE: begin
+            DERROTA: begin
                 /* Derrota: mostra estado 4 no display. */
-                state_display_value = 4'd4;
+                estado_display = 4'd4;
             end
         endcase
     end

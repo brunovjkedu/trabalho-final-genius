@@ -6,16 +6,16 @@
  */
 module record_register (
     input clk,
-    input rst,
-    input update,
-    input [5:0] level,
-    output reg [5:0] record
+    input reset,
+    input atualizar,
+    input [5:0] nivel,
+    output reg [5:0] recorde
 );
-    always @(posedge clk or posedge rst) begin
-        if (rst) begin
-            record <= 6'd0;
-        end else if (update && level > record) begin
-            record <= level;
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            recorde <= 6'd0;
+        end else if (atualizar && nivel > recorde) begin
+            recorde <= nivel;
         end
     end
 endmodule

@@ -10,62 +10,62 @@
  */
 module animation_driver (
     input clk,
-    input rst,
-    input [3:0] state_display_value,
-    input [3:0] game_leds,
-    input [6:0] normal_hex0,
-    input [6:0] normal_hex1,
-    input [6:0] normal_hex2,
+    input reset,
+    input [3:0] estado_display,
+    input [3:0] leds_jogo,
+    input [6:0] hex0_normal,
+    input [6:0] hex1_normal,
+    input [6:0] hex2_normal,
     output reg [3:0] leds,
-    output reg [7:0] green_leds,
+    output reg [7:0] leds_verdes,
     output reg [6:0] hex0,
     output reg [6:0] hex1,
     output reg [6:0] hex2
 );
-    parameter ANIMATION_TICKS = 32'd12500000;
+    parameter CICLOS_ANIMACAO = 32'd12500000;
 
-    reg [31:0] count;
-    reg [1:0] phase;
+    reg [31:0] contador;
+    reg [1:0] fase;
 
-    parameter HEX_BLANK = 7'b1111111;
-    parameter HEX_DASH = 7'b0111111;
+    parameter HEX_APAGADO = 7'b1111111;
+    parameter HEX_TRACO = 7'b0111111;
 
-    always @(posedge clk or posedge rst) begin
-        if (rst) begin
-            count <= 32'd0;
-            phase <= 2'd0;
-        end else if (state_display_value == 4'd3 || state_display_value == 4'd4) begin
-            if (count >= ANIMATION_TICKS) begin
-                count <= 32'd0;
-                phase <= phase + 2'd1;
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            contador <= 32'd0;
+            fase <= 2'd0;
+        end else if (estado_display == 4'd3 || estado_display == 4'd4) begin
+            if (contador >= CICLOS_ANIMACAO) begin
+                contador <= 32'd0;
+                fase <= fase + 2'd1;
             end else begin
-                count <= count + 32'd1;
+                contador <= contador + 32'd1;
             end
         end else begin
-            count <= 32'd0;
-            phase <= 2'd0;
+            contador <= 32'd0;
+            fase <= 2'd0;
         end
     end
 
     always @(*) begin
-        if (state_display_value == 4'd3) begin
+        if (estado_display == 4'd3) begin
             leds = 4'b0000;
-            green_leds = phase[0] ? 8'b11111111 : 8'b00000000;
-            hex2 = normal_hex2;
-            hex1 = normal_hex1;
-            hex0 = phase[0] ? normal_hex0 : HEX_BLANK;
-        end else if (state_display_value == 4'd4) begin
-            leds = phase[0] ? 4'b1010 : 4'b0101;
-            green_leds = 8'b00000000;
-            hex2 = normal_hex2;
-            hex1 = normal_hex1;
-            hex0 = phase[0] ? HEX_DASH : HEX_BLANK;
+            leds_verdes = fase[0] ? 8'b11111111 : 8'b00000000;
+            hex2 = hex2_normal;
+            hex1 = hex1_normal;
+            hex0 = fase[0] ? hex0_normal : HEX_APAGADO;
+        end else if (estado_display == 4'd4) begin
+            leds = fase[0] ? 4'b1010 : 4'b0101;
+            leds_verdes = 8'b00000000;
+            hex2 = hex2_normal;
+            hex1 = hex1_normal;
+            hex0 = fase[0] ? HEX_TRACO : HEX_APAGADO;
         end else begin
-            leds = game_leds;
-            green_leds = 8'b00000000;
-            hex2 = normal_hex2;
-            hex1 = normal_hex1;
-            hex0 = normal_hex0;
+            leds = leds_jogo;
+            leds_verdes = 8'b00000000;
+            hex2 = hex2_normal;
+            hex1 = hex1_normal;
+            hex0 = hex0_normal;
         end
     end
 endmodule

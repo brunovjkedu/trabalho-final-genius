@@ -23,12 +23,12 @@ Entradas e saidas principais:
 - `LEDR[3:0]`: LEDs dos quatro simbolos.
 - `LEDG[7:0]`: animacao de vitoria.
 - `HEX0`: nivel atual.
-- `HEX1` e `HEX2`: tempo restante durante a entrada; recorde em IDLE/VITORIA/DERROTA.
+- `HEX1` e `HEX2`: tempo restante durante a entrada; recorde em ESPERANDO/VITORIA/DERROTA.
 - `HEX3`: estado atual.
 
 ## Estados exibidos no HEX3
 
-- `0`: IDLE
+- `0`: ESPERANDO
 - `1`: EXIBICAO
 - `2`: ENTRADA
 - `3`: VITORIA
@@ -43,13 +43,13 @@ Entradas e saidas principais:
   - `10`: 30 segundos
   - `11`: 15 segundos
 - Animacao de vitoria nos LEDs verdes; animacao de derrota nos LEDs vermelhos.
-- Recorde em registrador, mostrado em HEX2/HEX1 no IDLE e no fim da partida.
+- Recorde em registrador, mostrado em HEX2/HEX1 no ESPERANDO e no fim da partida.
 - Sequencia aumentada para ate 32 niveis, com seletor em SW9.
-- LFSR girando em IDLE, para a sequencia variar conforme o instante em que o jogador inicia.
+- LFSR girando em ESPERANDO, para a sequencia variar conforme o instante em que o jogador inicia.
 
 ## Observacao sobre os diagramas parciais
 
-Os diagramas estao coerentes com a ideia geral do trabalho. No codigo, a FSM usa estados internos extras (`ADD_SYMBOL`, `SHOW_ON` e `SHOW_OFF`) para facilitar a implementacao. Para o relatorio, eles podem ser apresentados como partes do estado maior `EXIBICAO`.
+Os diagramas estao coerentes com a ideia geral do trabalho. No codigo, a FSM usa estados internos extras (`ADICIONA_SIMBOLO`, `MOSTRA_LED` e `APAGA_LED`) para facilitar a implementacao. Para o relatorio, eles podem ser apresentados como partes do estado maior `EXIBICAO`.
 
 No datapath, a implementacao usa endereco de leitura separado para exibicao e entrada. Isso deixa claro quando a memoria esta sendo lida para mostrar LEDs e quando esta sendo lida para comparar a jogada do usuario.
 
@@ -68,7 +68,7 @@ O testbench cobre:
 3. reset durante a execucao;
 4. timeout da entrada do jogador.
 
-Os tempos do testbench sao reduzidos para a simulacao terminar rapido. No top-level da FPGA, os valores padrao usam o clock de 50 MHz.
+Os tempos do testbench sao reduzidos para a simulacao terminar rapido. Na placa FPGA, os valores padrao usam o clock de 50 MHz.
 
 ## Quartus
 

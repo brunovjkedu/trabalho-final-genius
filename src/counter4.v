@@ -6,24 +6,24 @@
  * contar qual entrada do jogador esta sendo comparada.
  * Com 5 bits, ele consegue enderecar ate 32 posicoes da sequencia.
  *
- * No datapath, a instancia show_counter atende ao item 7.4 do PDF
- * e a instancia input_counter atende ao item 7.5 do PDF.
+ * No datapath, a instancia contador_exibicao_inst atende ao item 7.4 do PDF
+ * e a instancia contador_entrada_inst atende ao item 7.5 do PDF.
  */
 module counter4 (
     input clk,
-    input rst,
-    input clear,
-    input increment,
-    output reg [4:0] count
+    input reset,
+    input limpar,
+    input incrementar,
+    output reg [4:0] contador
 );
-    always @(posedge clk or posedge rst) begin
-        if (rst) begin
-            count <= 5'd0;
-        end else if (clear) begin
-            count <= 5'd0;
-        end else if (increment) begin
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            contador <= 5'd0;
+        end else if (limpar) begin
+            contador <= 5'd0;
+        end else if (incrementar) begin
             /* Incrementa uma posicao da sequencia. */
-            count <= count + 5'd1;
+            contador <= contador + 5'd1;
         end
     end
 endmodule
