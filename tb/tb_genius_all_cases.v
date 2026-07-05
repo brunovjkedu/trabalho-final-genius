@@ -231,6 +231,7 @@ module tb_genius_all_cases;
             @(posedge clk);
         end
         rst = 1'b1;
+        start = 1'b0;
         repeat (2) @(posedge clk);
         rst = 1'b0;
         repeat (2) @(posedge clk);
