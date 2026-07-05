@@ -131,6 +131,33 @@ module tb_genius_all_cases;
         forever #5 clk = ~clk;
     end
 
+    /*
+     * Para usar o EPWave no EDA Playground, descomente este bloco.
+     * No ModelSim nao precisa dele.
+     */
+    /*
+    initial begin
+        $dumpfile("dump.vcd");
+        $dumpvars(0, clk);
+        $dumpvars(0, reset);
+        $dumpvars(0, iniciar);
+        $dumpvars(0, estado);
+        $dumpvars(0, nivel);
+        $dumpvars(0, contador_exibicao);
+        $dumpvars(0, contador_entrada);
+        $dumpvars(0, pulsos_botoes);
+        $dumpvars(0, tem_botao);
+        $dumpvars(0, comparacao_ok);
+        $dumpvars(0, tempo_terminou);
+        $dumpvars(0, leds);
+        $dumpvars(0, leds_verdes);
+        $dumpvars(0, hex0);
+        $dumpvars(0, hex1);
+        $dumpvars(0, hex2);
+        $dumpvars(0, hex3);
+    end
+    */
+
     task resetar_jogo;
         begin
             reset = 1'b1;
