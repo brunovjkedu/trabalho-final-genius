@@ -1,7 +1,5 @@
 /*
- * Driver dos LEDs do Genius.
- *
- * Recebe um simbolo de 0 a 3 e acende somente o LED correspondente.
+ * Acende o LED vermelho correspondente ao simbolo que deve ser mostrado.
  */
 module led_driver (
     input habilita,
@@ -10,7 +8,6 @@ module led_driver (
 );
     always @(*) begin
         if (!habilita) begin
-            /* Durante intervalos ou entrada do jogador, LEDs ficam apagados. */
             leds = 4'b0000;
         end else begin
             case (simbolo)

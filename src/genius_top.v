@@ -1,9 +1,6 @@
 /*
- * Modulo principal para usar na FPGA.
- *
- * Ele conecta os sinais fisicos da placa DE1 aos dois blocos principais do
- * projeto: unidade de controle e datapath. Aqui tambem ficam os debouncers dos
- * botoes KEY, porque eles sao entradas mecanicas da placa.
+ * Modulo principal para a placa DE1.
+ * Conecta os switches, botoes, LEDs e displays com a FSM e o datapath.
  */
 module genius_top (
     input CLOCK_50,
@@ -16,10 +13,10 @@ module genius_top (
     output [6:0] HEX2,
     output [6:0] HEX3
 );
-    parameter TEMPO_DEBOUNCE = 250000;
-    parameter CICLOS_EXIBICAO = 32'd25000000;
-    parameter CICLOS_INTERVALO = 32'd20000000;
-    parameter CICLOS_UM_SEGUNDO = 32'd50000000;
+    parameter TEMPO_DEBOUNCE = 250000; /* 5 ms com clock de 50 MHz. */
+    parameter CICLOS_EXIBICAO = 32'd25000000; /* 0,5 s. */
+    parameter CICLOS_INTERVALO = 32'd20000000; /* 0,4 s. */
+    parameter CICLOS_UM_SEGUNDO = 32'd50000000; /* 1 s. */
 
     wire reset;
     wire iniciar;
@@ -52,25 +49,18 @@ module genius_top (
     wire [2:0] estado;
     wire [5:0] nivel_maximo;
 
-    /*
-     * SW1 e reset, SW0 inicia a partida.
-     * SW8/SW7 escolhem a dificuldade.
-     * SW9 escolhe o limite: 0 = 15 niveis, 1 = 32 niveis.
-     */
     assign reset = SW[1];
     assign iniciar = SW[0];
-    assign nivel_maximo = SW[9] ? 6'd32 : 6'd15;
+    assign nivel_maximo = SW[9] ? 6'd32 : 6'd15; /* SW9 escolhe 32 ou 15 niveis. */
 
-    /* Na DE1 os botoes KEY sao ativos em zero, por isso invertemos. */
+    /* Os botoes KEY da DE1 sao ativos em zero. */
     assign botoes_apertados = ~KEY;
 
-    /* 7.9 - Debouncer: cada botao passa por um filtro antes de chegar ao jogo. */
     debouncer #(.TEMPO_ESTAVEL(TEMPO_DEBOUNCE)) db0 (.clk(CLOCK_50), .reset(reset), .entrada_ruidosa(botoes_apertados[0]), .pulso(pulsos_botoes[0]));
     debouncer #(.TEMPO_ESTAVEL(TEMPO_DEBOUNCE)) db1 (.clk(CLOCK_50), .reset(reset), .entrada_ruidosa(botoes_apertados[1]), .pulso(pulsos_botoes[1]));
     debouncer #(.TEMPO_ESTAVEL(TEMPO_DEBOUNCE)) db2 (.clk(CLOCK_50), .reset(reset), .entrada_ruidosa(botoes_apertados[2]), .pulso(pulsos_botoes[2]));
     debouncer #(.TEMPO_ESTAVEL(TEMPO_DEBOUNCE)) db3 (.clk(CLOCK_50), .reset(reset), .entrada_ruidosa(botoes_apertados[3]), .pulso(pulsos_botoes[3]));
 
-    /* A unidade de controle gera os sinais que comandam o datapath. */
     genius_control controle (
         .clk(CLOCK_50),
         .reset(reset),
@@ -100,7 +90,6 @@ module genius_top (
         .estado(estado)
     );
 
-    /* O datapath guarda a sequencia, compara jogadas e controla saidas visuais. */
     genius_datapath #(
         .CICLOS_EXIBICAO(CICLOS_EXIBICAO),
         .CICLOS_INTERVALO(CICLOS_INTERVALO),

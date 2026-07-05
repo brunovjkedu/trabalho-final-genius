@@ -1,7 +1,6 @@
 /*
- * Conversor simples de numero decimal para dois digitos.
- *
- * Usado para mostrar tempo restante e recorde nos displays HEX2/HEX1.
+ * Separa um numero de ate dois digitos em dezena e unidade.
+ * Usado para mostrar tempo restante e recorde nos displays.
  */
 module decimal_digits (
     input [5:0] valor,

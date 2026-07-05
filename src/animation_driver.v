@@ -1,12 +1,6 @@
 /*
- * Animacoes simples para vitoria e derrota.
- *
- * Fora dos estados finais, os LEDs normais do jogo passam direto.
- * Em vitoria, os LEDs verdes piscam.
- * Em derrota, os LEDs vermelhos alternam em pares.
- * Mantem HEX2/HEX1 com o recorde nos estados finais.
- * O HEX0 pode piscar como detalhe visual.
- * O HEX3 fica fora daqui para continuar mostrando 3 ou 4 como estado.
+ * Cuida das animacoes de vitoria e derrota.
+ * Fora desses estados, deixa passar os LEDs e displays normais do jogo.
  */
 module animation_driver (
     input clk,
@@ -22,13 +16,13 @@ module animation_driver (
     output reg [6:0] hex1,
     output reg [6:0] hex2
 );
-    parameter CICLOS_ANIMACAO = 32'd12500000;
+    parameter CICLOS_ANIMACAO = 32'd12500000; /* 0,25 s com clock de 50 MHz. */
 
     reg [31:0] contador;
     reg [1:0] fase;
 
     parameter HEX_APAGADO = 7'b1111111;
-    parameter HEX_TRACO = 7'b0111111;
+    parameter HEX_TRACO = 7'b0111111; /* Acende so o segmento do meio. */
 
     always @(posedge clk or posedge reset) begin
         if (reset) begin

@@ -1,9 +1,6 @@
 /*
- * Testbench dos principais casos pedidos no enunciado.
- *
- * Os tempos do timer sao reduzidos para a simulacao rodar rapido.
- * Aqui os pulsos dos botoes sao aplicados diretamente, sem passar pelo
- * debouncer, porque o objetivo e testar a logica do jogo.
+ * Testbench com os principais casos do trabalho.
+ * Os tempos sao reduzidos para a simulacao terminar rapido.
  */
 module tb_genius_all_cases;
     reg clk;
@@ -131,13 +128,11 @@ module tb_genius_all_cases;
 
     initial begin
         clk = 1'b0;
-        /* Clock apenas para simulacao. Este delay nao vai para a FPGA. */
         forever #5 clk = ~clk;
     end
 
     task resetar_jogo;
         begin
-            /* Coloca o circuito em um estado conhecido antes de cada caso. */
             reset = 1'b1;
             iniciar = 1'b0;
             pulsos_botoes = 4'b0000;
@@ -150,7 +145,6 @@ module tb_genius_all_cases;
     task apertar_simbolo;
         input [1:0] simbolo;
         begin
-            /* Gera um pulso de um ciclo no botao correspondente ao simbolo. */
             @(negedge clk);
             pulsos_botoes = 4'b0001 << simbolo;
             @(negedge clk);
@@ -161,7 +155,6 @@ module tb_genius_all_cases;
 
     task esperar_estado_entrada;
         begin
-            /* Espera a FSM terminar a exibicao e liberar a entrada. */
             while (estado != ESPERA_ENTRADA) begin
                 @(posedge clk);
             end
@@ -172,7 +165,7 @@ module tb_genius_all_cases;
     task jogar_rodada_atual;
         begin
             esperar_estado_entrada;
-            /* Reproduz a sequencia correta lendo a memoria interna do datapath. */
+            /* No testbench podemos ler a memoria interna para repetir a sequencia certa. */
             for (indice = 0; indice < nivel; indice = indice + 1) begin
                 apertar_simbolo(datapath.memoria.memoria[indice]);
             end
@@ -195,7 +188,6 @@ module tb_genius_all_cases;
     initial begin
         erros = 0;
 
-        /* Caso 1 do enunciado. */
         $display("Caso 1: jogador completa tres rodadas consecutivas");
         resetar_jogo;
         iniciar = 1'b1;
@@ -213,7 +205,6 @@ module tb_genius_all_cases;
             $display("OK: tres rodadas corretas foram aceitas");
         end
 
-        /* Caso 2 do enunciado. */
         $display("Caso 2: jogador vence a partida");
         resetar_jogo;
         iniciar = 1'b1;
@@ -223,7 +214,6 @@ module tb_genius_all_cases;
         repeat (3) @(posedge clk);
         verificar_estado(VITORIA, "estado final deve ser VITORIA");
 
-        /* Caso 3 do enunciado. */
         $display("Caso 3: reset durante a execucao");
         resetar_jogo;
         iniciar = 1'b1;
@@ -237,7 +227,6 @@ module tb_genius_all_cases;
         repeat (2) @(posedge clk);
         verificar_estado(ESPERANDO, "reset deve retornar para ESPERANDO");
 
-        /* Caso 4 do enunciado. */
         $display("Caso 4: timeout da entrada do jogador");
         resetar_jogo;
         iniciar = 1'b1;

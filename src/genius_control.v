@@ -1,9 +1,6 @@
 /*
- * Unidade de controle do jogo Genius.
- *
- * Esta FSM decide em qual parte do jogo estamos e gera os sinais de controle
- * para o datapath: escrever na memoria, incrementar contadores, ligar timer,
- * habilitar LEDs e mudar o nivel.
+ * Unidade de controle do jogo.
+ * Esta FSM decide a etapa atual e liga os sinais que comandam o datapath.
  */
 module genius_control (
     input clk,
@@ -33,30 +30,27 @@ module genius_control (
     output reg [3:0] estado_display,
     output reg [2:0] estado
 );
-    parameter ESPERANDO = 3'd0;
-    parameter ADICIONA_SIMBOLO = 3'd1;
-    parameter MOSTRA_LED = 3'd2;
-    parameter APAGA_LED = 3'd3;
-    parameter ESPERA_ENTRADA = 3'd4;
-    parameter VITORIA = 3'd5;
-    parameter DERROTA = 3'd6;
-    parameter PAUSA_RODADA = 3'd7;
+    parameter ESPERANDO = 3'd0; /* HEX3 mostra 0. */
+    parameter ADICIONA_SIMBOLO = 3'd1; /* Parte da exibicao. */
+    parameter MOSTRA_LED = 3'd2; /* Parte da exibicao. */
+    parameter APAGA_LED = 3'd3; /* Parte da exibicao. */
+    parameter ESPERA_ENTRADA = 3'd4; /* HEX3 mostra 2. */
+    parameter VITORIA = 3'd5; /* HEX3 mostra 3. */
+    parameter DERROTA = 3'd6; /* HEX3 mostra 4. */
+    parameter PAUSA_RODADA = 3'd7; /* Pausa antes da proxima rodada. */
 
     reg [2:0] proximo_estado;
 
-    /* Logica combinacional da proxima transicao de estado. */
     always @(*) begin
         proximo_estado = estado;
 
         case (estado)
             ESPERANDO: begin
                 if (iniciar) begin
-                    /* SW0 inicia uma nova partida. */
                     proximo_estado = ADICIONA_SIMBOLO;
                 end
             end
             ADICIONA_SIMBOLO: begin
-                /* Grava o novo simbolo e depois passa para exibicao. */
                 proximo_estado = MOSTRA_LED;
             end
             MOSTRA_LED: begin
@@ -73,16 +67,12 @@ module genius_control (
             end
             ESPERA_ENTRADA: begin
                 if (tempo_terminou) begin
-                    /* Acabou o tempo de resposta do jogador. */
                     proximo_estado = DERROTA;
                 end else if (tem_botao && !comparacao_ok) begin
-                    /* Jogador apertou um botao diferente do esperado. */
                     proximo_estado = DERROTA;
                 end else if (tem_botao && comparacao_ok && entrada_finalizada && nivel == nivel_maximo) begin
-                    /* Ultimo nivel completado. */
                     proximo_estado = VITORIA;
                 end else if (tem_botao && comparacao_ok && entrada_finalizada) begin
-                    /* Rodada correta: faz uma pequena pausa antes da proxima. */
                     proximo_estado = PAUSA_RODADA;
                 end
             end
@@ -107,7 +97,6 @@ module genius_control (
         endcase
     end
 
-    /* Registrador de estado da FSM. */
     always @(posedge clk or posedge reset) begin
         if (reset) begin
             estado <= ESPERANDO;
@@ -116,9 +105,8 @@ module genius_control (
         end
     end
 
-    /* Sinais de saida da FSM para comandar o datapath. */
     always @(*) begin
-        /* Valores padrao evitam sinais ficando ligados sem querer. */
+        /* Padrao: tudo desligado; cada estado liga so o que precisa. */
         gera_simbolo = 1'b0;
         escreve_memoria = 1'b0;
         limpa_nivel = 1'b0;
@@ -137,7 +125,6 @@ module genius_control (
 
         case (estado)
             ESPERANDO: begin
-                /* Sistema parado, esperando iniciar. */
                 estado_display = 4'd0;
                 limpa_nivel = 1'b1;
                 limpa_contador_exibicao = 1'b1;
@@ -145,7 +132,6 @@ module genius_control (
                 zera_timer = 1'b1;
             end
             ADICIONA_SIMBOLO: begin
-                /* Gera e grava o novo simbolo no final da sequencia. */
                 estado_display = 4'd1;
                 gera_simbolo = 1'b1;
                 escreve_memoria = 1'b1;
@@ -154,7 +140,6 @@ module genius_control (
                 zera_timer = 1'b1;
             end
             MOSTRA_LED: begin
-                /* Mostra o LED atual por um tempo definido. */
                 estado_display = 4'd1;
                 liga_led_exibicao = 1'b1;
                 conta_timer = 1'b1;
@@ -164,7 +149,6 @@ module genius_control (
                 end
             end
             APAGA_LED: begin
-                /* Intervalo com LEDs apagados entre um simbolo e outro. */
                 estado_display = 4'd1;
                 conta_timer = 1'b1;
                 modo_timer = 2'd1;
@@ -176,7 +160,6 @@ module genius_control (
                 end
             end
             ESPERA_ENTRADA: begin
-                /* Espera o jogador repetir a sequencia. */
                 estado_display = 4'd2;
                 usa_endereco_entrada = 1'b1;
                 conta_timer = 1'b1;
@@ -195,11 +178,7 @@ module genius_control (
                 end
             end
             PAUSA_RODADA: begin
-                /*
-                 * Pausa curta depois que o jogador acerta a rodada.
-                 * Os LEDs ficam apagados para separar o clique do jogador
-                 * da exibicao da proxima sequencia.
-                 */
+                /* Pequena pausa antes de mostrar a proxima sequencia. */
                 estado_display = 4'd2;
                 conta_timer = 1'b1;
                 modo_timer = 2'd1;
@@ -208,12 +187,10 @@ module genius_control (
                 end
             end
             VITORIA: begin
-                /* Vitoria: mostra estado 3 no display. */
                 estado_display = 4'd3;
                 liga_led_exibicao = 1'b1;
             end
             DERROTA: begin
-                /* Derrota: mostra estado 4 no display. */
                 estado_display = 4'd4;
             end
         endcase

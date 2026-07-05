@@ -1,8 +1,5 @@
 /*
- * Converte os pulsos dos quatro botoes em um simbolo de 2 bits.
- *
- * A saida tem_botao indica que algum botao foi pressionado.
- * A saida simbolo informa qual foi o botao: 0, 1, 2 ou 3.
+ * Transforma os pulsos dos quatro botoes em um simbolo de 0 a 3.
  */
 module button_decoder (
     input [3:0] pulsos,
@@ -10,11 +7,10 @@ module button_decoder (
     output reg [1:0] simbolo
 );
     always @(*) begin
-        /* Valores padrao: nenhum botao pressionado. */
         tem_botao = 1'b0;
         simbolo = 2'd0;
 
-        /* A prioridade evita ambiguidades se dois botoes vierem ao mesmo tempo. */
+        /* Se dois botoes vierem juntos, o de menor numero tem prioridade. */
         if (pulsos[0]) begin
             tem_botao = 1'b1;
             simbolo = 2'd0;

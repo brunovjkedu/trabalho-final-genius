@@ -1,9 +1,6 @@
 /*
- * Datapath do jogo Genius.
- *
- * Este modulo junta os blocos que armazenam e processam dados: LFSR, memoria,
- * registrador de nivel, contadores, comparador, temporizador, LEDs e displays.
- * Ele nao decide a ordem do jogo; quem decide e a unidade de controle.
+ * Junta os blocos que guardam e processam os dados do jogo.
+ * Aqui ficam memoria, LFSR, contadores, comparador, timer, LEDs e displays.
  */
 module genius_datapath (
     input clk,
@@ -41,9 +38,9 @@ module genius_datapath (
     output [6:0] hex2,
     output [6:0] hex3
 );
-    parameter CICLOS_EXIBICAO = 32'd25000000;
-    parameter CICLOS_INTERVALO = 32'd10000000;
-    parameter CICLOS_UM_SEGUNDO = 32'd50000000;
+    parameter CICLOS_EXIBICAO = 32'd25000000; /* 0,5 s com clock de 50 MHz. */
+    parameter CICLOS_INTERVALO = 32'd10000000; /* 0,2 s. */
+    parameter CICLOS_UM_SEGUNDO = 32'd50000000; /* 1 s. */
     parameter SEGUNDOS_FACIL = 6'd60;
     parameter SEGUNDOS_NORMAL = 6'd45;
     parameter SEGUNDOS_DIFICIL = 6'd30;
@@ -67,13 +64,11 @@ module genius_datapath (
     wire [6:0] hex2_normal;
     wire gira_em_espera;
 
-    /* A mesma memoria e lida pela exibicao ou pela comparacao da entrada. */
+    /* A memoria pode ser lida pela exibicao ou pela entrada do jogador. */
     assign endereco_leitura = usa_endereco_entrada ? contador_entrada : contador_exibicao;
 
-    /* O novo simbolo e gravado na ultima posicao do nivel atual. */
     assign endereco_escrita = (nivel == 6'd0) ? 5'd0 : (nivel[4:0] - 5'd1);
 
-    /* Indicam para a FSM quando a exibicao/entrada chegou no fim da rodada. */
     assign exibicao_finalizada = (contador_exibicao == (nivel[4:0] - 5'd1));
     assign entrada_finalizada = (contador_entrada == (nivel[4:0] - 5'd1));
 
@@ -95,7 +90,7 @@ module genius_datapath (
                          (nivel >= 6'd10) ? (nivel - 6'd10) :
                          nivel[3:0];
 
-    /* 7.1 - Gerador Pseudoaleatorio. */
+    /* 7.1 - Gerador Pseudoaleatorio */
     lfsr_random lfsr_jogo (
         .clk(clk),
         .reset(reset),
@@ -104,7 +99,7 @@ module genius_datapath (
         .simbolo_randomico(simbolo_sorteado)
     );
 
-    /* 7.2 - Memoria da Sequencia. */
+    /* 7.2 - Memoria da Sequencia */
     sequence_memory memoria (
         .clk(clk),
         .habilita_escrita(escreve_memoria),
@@ -114,7 +109,7 @@ module genius_datapath (
         .dado_leitura(simbolo_esperado)
     );
 
-    /* 7.3 - Registrador de Nivel. */
+    /* 7.3 - Registrador de Nivel */
     level_register registrador_nivel (
         .clk(clk),
         .reset(reset),
@@ -123,7 +118,7 @@ module genius_datapath (
         .nivel(nivel)
     );
 
-    /* 7.4 - Contador de Exibicao. */
+    /* 7.4 - Contador de Exibicao */
     counter4 contador_exibicao_inst (
         .clk(clk),
         .reset(reset),
@@ -132,7 +127,7 @@ module genius_datapath (
         .contador(contador_exibicao)
     );
 
-    /* 7.5 - Contador de Entrada. */
+    /* 7.5 - Contador de Entrada */
     counter4 contador_entrada_inst (
         .clk(clk),
         .reset(reset),
@@ -141,21 +136,20 @@ module genius_datapath (
         .contador(contador_entrada)
     );
 
-    /* Transforma pulsos dos botoes em simbolo jogado. */
     button_decoder decodificador (
         .pulsos(pulsos_botoes),
         .tem_botao(tem_botao),
         .simbolo(simbolo_jogado)
     );
 
-    /* 7.6 - Comparador de Sequencia. */
+    /* 7.6 - Comparador de Sequencia */
     sequence_compare comparador (
         .simbolo_esperado(simbolo_esperado),
         .simbolo_jogado(simbolo_jogado),
         .resultado_comparacao(comparacao_ok)
     );
 
-    /* 7.7 - Temporizador. */
+    /* 7.7 - Temporizador */
     timer #(
         .CICLOS_EXIBICAO(CICLOS_EXIBICAO),
         .CICLOS_INTERVALO(CICLOS_INTERVALO),
@@ -189,14 +183,13 @@ module genius_datapath (
         .unidade(unidade_display)
     );
 
-    /* Liga o LED correspondente ao simbolo esperado. */
     led_driver driver_leds (
         .habilita(liga_led_exibicao),
         .simbolo(simbolo_esperado),
         .leds(leds_jogo)
     );
 
-    /* 7.8 - Decodificador para Display de Sete Segmentos. */
+    /* 7.8 - Decodificador para Display de Sete Segmentos */
     seven_segment display_nivel (
         .valor(digito_nivel),
         .segmentos(hex0_normal)
@@ -227,7 +220,6 @@ module genius_datapath (
         .hex2(hex2)
     );
 
-    /* 7.8 - Decodificador para Display de Sete Segmentos. */
     seven_segment display_estado (
         .valor(estado_display),
         .segmentos(hex3)

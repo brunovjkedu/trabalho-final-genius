@@ -1,15 +1,12 @@
 /*
- * 7.8 - Decodificador para Display de Sete Segmentos.
- *
- * Converte um valor hexadecimal de 0 a F para o padrao dos segmentos.
- * A placa DE1 usa segmentos ativos em zero.
+ * Converte um valor de 0 a F para o display de sete segmentos da DE1.
  */
 module seven_segment (
     input [3:0] valor,
     output reg [6:0] segmentos
 );
     always @(*) begin
-        /* Cada bit controla um segmento do display. */
+        /* Na DE1 os segmentos acendem com 0. */
         case (valor)
             4'h0: segmentos = 7'b1000000;
             4'h1: segmentos = 7'b1111001;

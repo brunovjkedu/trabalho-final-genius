@@ -1,8 +1,5 @@
 /*
- * Registrador de recorde.
- *
- * Guarda o maior nivel completado enquanto a placa permanece ligada.
- * O valor e perdido ao desligar ou resetar a FPGA, pois e apenas um registrador.
+ * Guarda o maior nivel alcancado enquanto a placa esta ligada.
  */
 module record_register (
     input clk,
